@@ -30,17 +30,21 @@ ValueConverters (it can do much more). I wrote that too. See [HomePage.xaml](htt
 
 Pages and PageViewModels are singletons.
 -	Any transient PageViewModel ‘state’ is injected when the corresponding page is pushed.
-The Rest service contains a singleton `HttpService`, so we can’t suffer from ‘port starvation’.
-The API layer (OpenWeatherService.cs, …) sits between the low-level Rest service and the application layer.
+
+The Rest service contains a singleton `HttpService`, so we can’t suffer from ‘port starvation’.  
+The API layer ([OpenWeatherService.cs](https://github.com/Keflon/TrilogyAvivaTest/blob/main/TrilogyAvivaTest/TrilogyAvivaTest/Services/Api/OpenWeatherService.cs), …) sits between the low-level Rest service and the application layer.
 -	The app does not interact directly with the Rest layer.
 
 ## Extras:
 If you mis-spell a location and the API finds a suitable location, the spelling is corrected, and if the (mis-spelt) location has been saved, 
 the saved location is updated.  
+A saved location can be deleted.  
 The app counts how many times it has been cold-started and says ‘Hi’ on first run.
 -	You can reset this count on the HomePage.
 
 Buttons disable, hide and/or update their text automatically, as appropriate.
--	Mostly using [CommandZeroAsync](https://www.nuget.org/packages/FunctionZero.CommandZero). I wrote that too.
+-	Mostly using [CommandZeroAsync](https://www.nuget.org/packages/FunctionZero.CommandZero). I wrote that too.  
+
+If you find any bugs or have any requests let me know and I'll fix them! :)
 
 
