@@ -9,7 +9,12 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TrilogyAvivaTest.iOS", "Tri
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TrilogyAvivaTest", "TrilogyAvivaTest\TrilogyAvivaTest\TrilogyAvivaTest.csproj", "{11A5E401-93F8-48B4-B334-615BFE0A1D1C}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TrilogyAvivaUnitTests", "TrilogyAvivaUnitTests\TrilogyAvivaUnitTests.csproj", "{8122663B-B0FF-4102-A481-602AB8B4E252}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TrilogyAvivaUnitTests", "TrilogyAvivaUnitTests\TrilogyAvivaUnitTests.csproj", "{8122663B-B0FF-4102-A481-602AB8B4E252}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{56538DE9-C3EE-48D3-9E0A-A25D64A157A3}"
+	ProjectSection(SolutionItems) = preProject
+		README.md = README.md
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
