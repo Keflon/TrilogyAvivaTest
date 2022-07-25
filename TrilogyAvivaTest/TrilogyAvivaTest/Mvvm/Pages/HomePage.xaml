@@ -1,12 +1,26 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://xamarin.com/schemas/2014/forms"
-             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-             x:Class="TrilogyAvivaTest.Mvvm.Pages.HomePage">
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml" 
+             xmlns:pageviewmodels="clr-namespace:TrilogyAvivaTest.Mvvm.PageViewModels"
+             x:Class="TrilogyAvivaTest.Mvvm.Pages.HomePage"
+
+             >
+    <!--x:DataType="pageviewmodels:HomePageVm"-->
     <ContentPage.Content>
         <StackLayout>
-            <Label Text="Welcome to Xamarin.Forms!"
-                VerticalOptions="CenterAndExpand" 
-                HorizontalOptions="CenterAndExpand" />
+            <Label Text="Please Enter City Name" />
+            <Entry Text="{Binding CityName}" Placeholder="{Binding CityNamePlaceholder}"/>
+            <Button Text="{Binding GetCityWeatherCommand.Text}" Command="{Binding GetCityWeatherCommand}"/>
+
+            <StackLayout BindableLayout.ItemsSource="{Binding CityWeather.weather}">
+                <BindableLayout.ItemTemplate>
+                    <DataTemplate >
+                        <Label Text="{Binding description}"/>
+                    </DataTemplate>
+                </BindableLayout.ItemTemplate>
+            </StackLayout>
+
+            <Label Text="{Binding WeatherDescription}"/>
         </StackLayout>
     </ContentPage.Content>
 </ContentPage>

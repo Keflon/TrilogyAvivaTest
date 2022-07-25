@@ -1,6 +1,7 @@
 ﻿using FunctionZero.CommandZero;
 using System;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Input;
@@ -20,6 +21,8 @@ namespace TrilogyAvivaTest.Mvvm.PageViewModels
         private string _cityName;
         private bool _isCitySaved;
         private WeatherResponse _cityWeather;
+        private string _cityNamePlaceholder;
+        private string _weatherDescription;
 
         public int RunCount { get; private set; }
 
@@ -27,6 +30,12 @@ namespace TrilogyAvivaTest.Mvvm.PageViewModels
         {
             get => _cityName;
             set => SetProperty(ref _cityName, value);
+        }
+
+        public string CityNamePlaceholder
+        {
+            get => _cityNamePlaceholder;
+            set => SetProperty(ref _cityNamePlaceholder, value);
         }
 
         public bool IsCitySaved
@@ -39,11 +48,16 @@ namespace TrilogyAvivaTest.Mvvm.PageViewModels
             get => _cityWeather;
             set => SetProperty(ref _cityWeather, value);
         }
+        public string WeatherDescription
+        {
+            get => _weatherDescription;
+            set => SetProperty(ref _weatherDescription, value);
+        }
 
-        public ICommand ResetRunCountCommand { get; }
-        public ICommand GetCityWeatherCommand { get; }
-        public ICommand SaveCityNameCommand { get; }
-        public ICommand ResetCityNameCommand { get; }
+        public CommandZeroAsync ResetRunCountCommand { get; }
+        public CommandZeroAsync GetCityWeatherCommand { get; }
+        public CommandZeroAsync SaveCityNameCommand { get; }
+        public CommandZeroAsync ResetCityNameCommand { get; }
 
         public HomePageVm(ILogger logger, IKeyStore keyStore, OpenWeatherService weatherService) : base(logger)
         {
@@ -53,19 +67,21 @@ namespace TrilogyAvivaTest.Mvvm.PageViewModels
             ResetRunCountCommand = new CommandBuilder().AddGuard(this).SetExecute(ResetRunCount).SetName("Reset").Build();
             GetCityWeatherCommand = new CommandBuilder().AddGuard(this).SetExecuteAsync(GetCityWeatherAsync).SetName("GO!").SetCanExecute(GetIsCityValid).AddObservedProperty(this, nameof(CityName)).Build();
             SaveCityNameCommand = new CommandBuilder().AddGuard(this).SetExecuteAsync(SaveCityAsync).SetName("Save").SetCanExecute(GetIsCityValid).AddObservedProperty(this, nameof(CityName)).Build();
-            ResetCityNameCommand = new CommandBuilder().AddGuard(this).SetExecute(ResetCity).SetName("Reset").SetCanExecute(()=> IsCitySaved).AddObservedProperty(this, nameof(IsCitySaved)).Build();
+            ResetCityNameCommand = new CommandBuilder().AddGuard(this).SetExecute(ResetCity).SetName("Reset").SetCanExecute(() => IsCitySaved).AddObservedProperty(this, nameof(IsCitySaved)).Build();
         }
 
         private void ResetRunCount()
         {
-             _keyStore.Delete(Constants.RunCountKey);
-        } 
+            _keyStore.Delete(Constants.RunCountKey);
+            RunCount = 0;
+        }
         private async Task GetCityWeatherAsync()
         {
             var result = await _weatherService.GetWeatherAsync(CityName);
             switch (result.status)
             {
                 case Services.Rest.ResultStatus.Success:
+                    CityWeather = result.payload;
                     break;
                 case Services.Rest.ResultStatus.ConnectionFailed:
                     break;
@@ -79,6 +95,7 @@ namespace TrilogyAvivaTest.Mvvm.PageViewModels
                     break;
             }
         }
+
         private bool GetIsCityValid()
         {
             // TODO: Validate the CityName property
@@ -95,8 +112,6 @@ namespace TrilogyAvivaTest.Mvvm.PageViewModels
             IsCitySaved = false;
         }
 
-
-
         internal void Init(int runCount)
         {
             _logger.LogLine($"Run count is {runCount}");
@@ -109,6 +124,39 @@ namespace TrilogyAvivaTest.Mvvm.PageViewModels
 
             CityName = await _keyStore.ReadStringAsync(Constants.CityNameKey);
             IsCitySaved = !string.IsNullOrEmpty(CityName);
+
+            // TODO: Use an API call to get a nearby city.
+            CityNamePlaceholder = "Liverpool";
+        }
+
+        protected override void OnPropertyChanged([CallerMemberName] string propertyName = null)
+        {
+            base.OnPropertyChanged(propertyName);
+
+            if (propertyName == nameof(CityWeather))
+            {
+                if (CityWeather != null)
+                {
+                    var builder = new StringBuilder();
+
+                    foreach (var item in CityWeather.weather)
+                    {
+                        builder.AppendLine(item.description.ToString());
+                    }
+                    builder.Append("Current temp: ");
+                    builder.AppendLine(CityWeather.main.temp.ToString());
+                    builder.Append("Min temp: ");
+                    builder.AppendLine(CityWeather.main.temp_min.ToString());
+                    builder.Append("Max temp: ");
+                    builder.AppendLine(CityWeather.main.temp_max.ToString());
+
+                    WeatherDescription = builder.ToString();
+                }
+                else
+                {
+                    WeatherDescription = "There is no weather today";
+                }
+            }
         }
     }
 }
