@@ -2,11 +2,14 @@
 using SimpleInjector;
 using System;
 using System.Collections.Generic;
+using System.Net.Http;
 using System.Text;
 using TrilogyAvivaTest.Mvvm.Pages;
 using TrilogyAvivaTest.Mvvm.PageViewModels;
+using TrilogyAvivaTest.Services.Api;
 using TrilogyAvivaTest.Services.Logging;
 using TrilogyAvivaTest.Services.Persistence;
+using TrilogyAvivaTest.Services.Rest;
 
 namespace TrilogyAvivaTest.Bootstrap
 {
@@ -33,6 +36,8 @@ namespace TrilogyAvivaTest.Bootstrap
             // Tell the IoC container about our Services.
             _IoCC.Register<ILogger, DebugLogger>(Lifestyle.Singleton);
             _IoCC.Register<IKeyStore, KeyStore>(Lifestyle.Singleton);
+            _IoCC.Register<IRestService>(GetRestService, Lifestyle.Singleton);
+            _IoCC.Register<OpenWeatherService>(Lifestyle.Singleton);
         }
 
         private IPageServiceZero CreatePageService()
@@ -44,6 +49,15 @@ namespace TrilogyAvivaTest.Bootstrap
             // that uses the IoC container. We could easily provide any sort of factory, we don't need to use an IoC container.
             var pageService = new PageServiceZero(() => App.Current.MainPage.Navigation, (theType) => _IoCC.GetInstance(theType));
             return pageService;
+        }
+
+        private IRestService GetRestService()
+        {
+            var httpClient = new HttpClient();
+            // Configure the client.
+            httpClient.DefaultRequestHeaders.Add("Accept", "application/json");
+
+            return new RestService(httpClient, ApiConstants.BaseApiUrl);
         }
 
         public App GetApplicationInstance() => _IoCC.GetInstance<App>();

@@ -1,6 +1,7 @@
 ﻿using FunctionZero.MvvmZero;
 using System;
 using System.Threading.Tasks;
+using TrilogyAvivaTest.Bootstrap;
 using TrilogyAvivaTest.Mvvm.Pages;
 using TrilogyAvivaTest.Mvvm.PageViewModels;
 using TrilogyAvivaTest.Services.Logging;
@@ -31,7 +32,7 @@ namespace TrilogyAvivaTest
         private async Task InitialiseTheVm(HomePageVm vm, IKeyStore keyStore)
         {
             // Determine how many times the app has been launched from a cold-start and inform the vm.
-            var result = await keyStore.ReadStringAsync("RunCount");
+            var result = await keyStore.ReadStringAsync(Constants.RunCountKey);
             int runCount;
             if(result == null)
             {
@@ -42,6 +43,9 @@ namespace TrilogyAvivaTest
                 if (int.TryParse(result, out runCount) == false)
                     runCount = 0;
             }
+
+            await keyStore.WriteStringAsync(Constants.RunCountKey, runCount.ToString());
+
             vm.Init(runCount);
         }
 
