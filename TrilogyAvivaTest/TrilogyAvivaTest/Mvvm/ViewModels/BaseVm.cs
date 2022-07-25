@@ -1,10 +1,12 @@
-﻿using System;
+﻿using FunctionZero.MvvmZero;
+using System;
 using System.Collections.Generic;
 using System.Text;
 
 namespace TrilogyAvivaTest.Mvvm.ViewModels
 {
-    internal class BaseVm
+    public class BaseVm : MvvmZeroBaseVm
     {
+        // TODO: Specialise for all ViewModels (page and non-page) here if necessary
     }
 }
