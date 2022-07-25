@@ -9,11 +9,8 @@ namespace TrilogyAvivaTest.Mvvm.PageViewModels
 {
     internal class HomePageVm : BasePageVm
     {
-        private readonly ILogger _logger;
-
-        public HomePageVm(ILogger logger)
+        public HomePageVm(ILogger logger) : base(logger)
         {
-            _logger = logger;
         }
 
         internal void Init(string initMessage)
