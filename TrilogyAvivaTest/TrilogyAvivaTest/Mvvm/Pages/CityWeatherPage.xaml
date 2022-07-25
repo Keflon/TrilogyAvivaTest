@@ -2,7 +2,8 @@
 <ContentPage xmlns="http://xamarin.com/schemas/2014/forms"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:z="clr-namespace:FunctionZero.zBind.z;assembly=FunctionZero.zBind"
-             x:Class="TrilogyAvivaTest.Mvvm.Pages.CityWeatherPage">
+             x:Class="TrilogyAvivaTest.Mvvm.Pages.CityWeatherPage"
+             Title="{z:Bind \'Weather for: \'+CityWeather.Name}">
     <ContentPage.Content>
         <StackLayout>
             <Label Text="{z:Bind \'Your weather for \'+CityWeather.Name+\' today:\'}"/>

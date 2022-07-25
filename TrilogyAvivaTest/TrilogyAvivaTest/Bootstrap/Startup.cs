@@ -7,6 +7,7 @@ using System.Net.Http;
 using System.Text;
 using TrilogyAvivaTest.Mvvm.Pages;
 using TrilogyAvivaTest.Mvvm.PageViewModels;
+using TrilogyAvivaTest.Services.Alert;
 using TrilogyAvivaTest.Services.Api;
 using TrilogyAvivaTest.Services.Logging;
 using TrilogyAvivaTest.Services.Persistence;
@@ -42,6 +43,7 @@ namespace TrilogyAvivaTest.Bootstrap
             _IoCC.Register<IKeyStore>(()=> new KeyStore(_IoCC.GetInstance<ILogger>(), Path.Combine(FileSystem.CacheDirectory)), Lifestyle.Singleton);
             _IoCC.Register<IRestService>(GetRestService, Lifestyle.Singleton);
             _IoCC.Register<OpenWeatherService>(()=>new OpenWeatherService(_IoCC.GetInstance<IRestService>(), ApiConstants.WeatherServiceEndpoint), Lifestyle.Singleton);
+            _IoCC.Register<IAlertService, AlertService>(Lifestyle.Singleton);
         }
 
         private IPageServiceZero CreatePageService()

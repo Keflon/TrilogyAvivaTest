@@ -4,24 +4,27 @@
              xmlns:pageviewmodels="clr-namespace:TrilogyAvivaTest.Mvvm.PageViewModels"
              xmlns:z="clr-namespace:FunctionZero.zBind.z;assembly=FunctionZero.zBind"
              x:Class="TrilogyAvivaTest.Mvvm.Pages.HomePage"
+             Title="Weather Sample"
              >
     <!--x:DataType="pageviewmodels:HomePageVm"-->
     <ContentPage.Content>
         <StackLayout>
-            <Label Text="{z:Bind \'The runCount has been manually reset\'}" IsVisible="{z:Bind 'RunCount == 0'}"  />
-            <Label Text="{z:Bind \'This is the first run of this app\'}" IsVisible="{z:Bind 'RunCount == 1'}"  />
-            <Label Text="{z:Bind \'This app has been run \' + RunCount +\' times\'}" IsVisible="{z:Bind 'RunCount GT 1'}"  />
-            <Button Text="{Binding ResetRunCountCommand.Text}" Command="{Binding ResetRunCountCommand}"/>
+            <Grid ColumnDefinitions="*,Auto">
+                <Label  Grid.Column="0" Text="{z:Bind \'The Run-Count has been manually reset\'}" IsVisible="{z:Bind 'RunCount == 0'}"  />
+                <Label  Grid.Column="0" Text="{z:Bind \'This is the first run of this app\'}" IsVisible="{z:Bind 'RunCount == 1'}"  />
+                <Label  Grid.Column="0" Text="{z:Bind \'This app has been run \' + RunCount +\' times\'}" IsVisible="{z:Bind 'RunCount GT 1'}"  />
+                <Button Grid.Column="1" Text="{Binding ResetRunCountCommand.Text}" Command="{Binding ResetRunCountCommand}" IsVisible="{z:Bind 'RunCount != 0'}"/>
+            </Grid>
 
             <Label Text="Please Enter City Name" />
-            <Entry Text="{Binding CityName}" Placeholder="{Binding CityNamePlaceholder}"/>
-            <Button Text="{Binding SaveCityNameCommand.Text}" Command="{Binding SaveCityNameCommand}"/>
-            <Button Text="{Binding ResetCityNameCommand.Text}" Command="{Binding ResetCityNameCommand}"/>
-
+            
+            <Grid ColumnDefinitions="*,Auto,Auto">
+                <Entry  Grid.Column="0" Text="{Binding CityName}" Placeholder="{Binding CityNamePlaceholder}"/>
+                <Button Grid.Column="1" Text="{Binding SaveCityNameCommand.Text}" Command="{Binding SaveCityNameCommand}"/>
+                <Button Grid.Column="2" Text="{Binding ResetCityNameCommand.Text}" Command="{Binding ResetCityNameCommand}"/>
+            </Grid>
 
             <Button Text="{Binding GetCityWeatherCommand.Text}" Command="{Binding GetCityWeatherCommand}"/>
-
-
         </StackLayout>
     </ContentPage.Content>
 </ContentPage>

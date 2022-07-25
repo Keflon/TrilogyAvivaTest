@@ -38,12 +38,12 @@ namespace TrilogyAvivaTest
             int runCount;
             if(result == null)
             {
-                runCount = 0;
+                runCount = 1;
             }
             else
             {
                 if (int.TryParse(result, out runCount) == false)
-                    runCount = 0;
+                    runCount = 1;
             }
 
             await keyStore.WriteStringAsync(Constants.RunCountKey, (runCount+1).ToString());

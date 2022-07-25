@@ -7,6 +7,7 @@ using TrilogyAvivaTest.Bootstrap;
 using TrilogyAvivaTest.Models;
 using TrilogyAvivaTest.Mvvm.Pages;
 using TrilogyAvivaTest.Mvvm.ViewModels;
+using TrilogyAvivaTest.Services.Alert;
 using TrilogyAvivaTest.Services.Api;
 using TrilogyAvivaTest.Services.Logging;
 using TrilogyAvivaTest.Services.Persistence;
@@ -18,6 +19,7 @@ namespace TrilogyAvivaTest.Mvvm.PageViewModels
         private readonly IKeyStore _keyStore;
         private readonly OpenWeatherService _weatherService;
         private readonly IPageServiceZero _pageService;
+        private readonly IAlertService _alertService;
         private string _cityName;
         private bool _isCitySaved;
         private string _cityNamePlaceholder;
@@ -59,20 +61,34 @@ namespace TrilogyAvivaTest.Mvvm.PageViewModels
         public CommandZeroAsync SaveCityNameCommand { get; }
         public CommandZeroAsync ResetCityNameCommand { get; }
 
-        public HomePageVm(ILogger logger, IKeyStore keyStore, OpenWeatherService weatherService, IPageServiceZero pageService) : base(logger)
+        public HomePageVm(
+            ILogger logger,
+            IKeyStore keyStore,
+            OpenWeatherService weatherService,
+            IPageServiceZero pageService,
+            IAlertService alertService) : base(logger)
         {
             _keyStore = keyStore;
             _weatherService = weatherService;
             _pageService = pageService;
+            _alertService = alertService;
 
             // CityName is retrieved from backing store in OnOwnerPagePushed.
             // Setting it here so it does not need to be null-checked.
             CityName = string.Empty;
 
             ResetRunCountCommand = new CommandBuilder().AddGuard(this).SetExecute(ResetRunCount).SetName("Reset").Build();
-            GetCityWeatherCommand = new CommandBuilder().AddGuard(this).SetExecuteAsync(GetCityWeatherAsync).SetName("GO!").SetCanExecute(GetIsCityValid).AddObservedProperty(this, nameof(CityName)).Build();
+            GetCityWeatherCommand = new CommandBuilder().AddGuard(this).SetExecuteAsync(GetCityWeatherAsync).SetName(GetGoText).SetCanExecute(GetIsCityValid).AddObservedProperty(this, nameof(CityName)).Build();
             SaveCityNameCommand = new CommandBuilder().AddGuard(this).SetExecuteAsync(SaveCityAsync).SetName("Save").SetCanExecute(CanSaveCity).AddObservedProperty(this, nameof(CityName)).Build();
             ResetCityNameCommand = new CommandBuilder().AddGuard(this).SetExecute(ResetCity).SetName("Reset").SetCanExecute(() => IsCitySaved).AddObservedProperty(this, nameof(IsCitySaved)).Build();
+        }
+
+        private string GetGoText()
+        {
+            if (GetIsCityValid())
+                return "Get Weather for " + CityName;
+
+            return "Waiting ...";
         }
 
         private bool CanSaveCity()
@@ -91,17 +107,28 @@ namespace TrilogyAvivaTest.Mvvm.PageViewModels
             switch (result.status)
             {
                 case Services.Rest.ResultStatus.Success:
+                    if (CityName == _savedCityName)
+                    {
+                        CityName = result.payload.Name;
+                        if (IsCitySaved)
+                            await SaveCityNameCommand?.ExecuteAsync(null);
+                    }
                     await _pageService.PushPageAsync<CityWeatherPage, CityWeatherPageVm>((vm) => vm.Init(result.payload));
                     break;
                 case Services.Rest.ResultStatus.ConnectionFailed:
+                    await _alertService.DisplayAlertAsync("Something awful happened", "Please check your connection and try again", "OK");
                     break;
                 case Services.Rest.ResultStatus.Unauthorized:
+                    await _alertService.DisplayAlertAsync("Something awful happened", "Please check the API key and try again", "OK");
                     break;
                 case Services.Rest.ResultStatus.BadResponse:
+                    await _alertService.DisplayAlertAsync("Something awful happened", "The server may be having a wobble. Please try again later", "OK");
                     break;
                 case Services.Rest.ResultStatus.BadPayload:
+                    await _alertService.DisplayAlertAsync("Something awful happened", "The server may be having a wobble. Please try again later", "OK");
                     break;
                 case Services.Rest.ResultStatus.Other:
+                    await _alertService.DisplayAlertAsync("Something awful happened", "That's all we know. Maybe try again later?", "OK");
                     break;
             }
         }
@@ -136,7 +163,10 @@ namespace TrilogyAvivaTest.Mvvm.PageViewModels
             IsCitySaved = !string.IsNullOrEmpty(CityName);
 
             // TODO: Use an API call to get a nearby city.
-            CityNamePlaceholder = "Liverpool";
+            CityNamePlaceholder = "E.g. Liverpool";
+
+            if (RunCount == 1)
+                await _alertService.DisplayAlertAsync("First Run!", "Hello. This is the first time you have launched the app. Hope you like it :)", "Dismiss");
         }
 
 
