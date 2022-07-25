@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 
 using Foundation;
+using TrilogyAvivaTest.Bootstrap;
 using UIKit;
 
 namespace TrilogyAvivaTest.iOS
@@ -23,7 +24,8 @@ namespace TrilogyAvivaTest.iOS
         public override bool FinishedLaunching(UIApplication app, NSDictionary options)
         {
             global::Xamarin.Forms.Forms.Init();
-            LoadApplication(new App());
+
+            LoadApplication(new Startup().GetApplicationInstance());
 
             return base.FinishedLaunching(app, options);
         }

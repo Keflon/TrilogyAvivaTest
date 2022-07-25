@@ -4,6 +4,7 @@ using Android.App;
 using Android.Content.PM;
 using Android.Runtime;
 using Android.OS;
+using TrilogyAvivaTest.Bootstrap;
 
 namespace TrilogyAvivaTest.Droid
 {
@@ -16,7 +17,8 @@ namespace TrilogyAvivaTest.Droid
 
             Xamarin.Essentials.Platform.Init(this, savedInstanceState);
             global::Xamarin.Forms.Forms.Init(this, savedInstanceState);
-            LoadApplication(new App());
+
+            LoadApplication(new Startup().GetApplicationInstance());
         }
         public override void OnRequestPermissionsResult(int requestCode, string[] permissions, [GeneratedEnum] Android.Content.PM.Permission[] grantResults)
         {
