@@ -13,9 +13,9 @@ namespace TrilogyAvivaTest.Mvvm.PageViewModels
         {
         }
 
-        internal void Init(string initMessage)
+        internal void Init(int runCount)
         {
-            _logger.LogLine(initMessage);
+            _logger.LogLine($"Run count is {runCount}");
         }
     }
 }

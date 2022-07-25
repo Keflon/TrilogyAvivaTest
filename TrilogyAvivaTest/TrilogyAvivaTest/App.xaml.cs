@@ -1,8 +1,10 @@
 ﻿using FunctionZero.MvvmZero;
 using System;
+using System.Threading.Tasks;
 using TrilogyAvivaTest.Mvvm.Pages;
 using TrilogyAvivaTest.Mvvm.PageViewModels;
 using TrilogyAvivaTest.Services.Logging;
+using TrilogyAvivaTest.Services.Persistence;
 using Xamarin.Forms;
 using Xamarin.Forms.Xaml;
 
@@ -12,7 +14,7 @@ namespace TrilogyAvivaTest
     {
         private readonly ILogger _logger;
 
-        public App(ILogger logger, IPageServiceZero pageService)
+        public App(ILogger logger, IKeyStore keyStore, IPageServiceZero pageService)
         {
             _logger = logger;
 
@@ -23,7 +25,24 @@ namespace TrilogyAvivaTest
 
             // Present the HomePage, bound to a HomePageVm.
             // Bonus points for getting the pop-culture reference here ...
-            pageService.PushPageAsync<HomePage, HomePageVm>((vm) =>  vm.Init("MAIN SCREEN TURN ON"));
+            pageService.PushPageAsync<HomePage, HomePageVm>(async (vm)=> await InitialiseTheVm(vm, keyStore));
+        }
+
+        private async Task InitialiseTheVm(HomePageVm vm, IKeyStore keyStore)
+        {
+            // Determine how many times the app has been launched from a cold-start and inform the vm.
+            var result = await keyStore.ReadStringAsync("RunCount");
+            int runCount;
+            if(result == null)
+            {
+                runCount = 0;
+            }
+            else
+            {
+                if (int.TryParse(result, out runCount) == false)
+                    runCount = 0;
+            }
+            vm.Init(runCount);
         }
 
         protected override void OnStart()
