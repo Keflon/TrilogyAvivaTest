@@ -12,10 +12,10 @@
             <Entry Text="{Binding CityName}" Placeholder="{Binding CityNamePlaceholder}"/>
             <Button Text="{Binding GetCityWeatherCommand.Text}" Command="{Binding GetCityWeatherCommand}"/>
 
-            <StackLayout BindableLayout.ItemsSource="{Binding CityWeather.weather}">
+            <StackLayout BindableLayout.ItemsSource="{Binding CityWeather.Weather}">
                 <BindableLayout.ItemTemplate>
                     <DataTemplate >
-                        <Label Text="{Binding description}"/>
+                        <Label Text="{Binding Description}"/>
                     </DataTemplate>
                 </BindableLayout.ItemTemplate>
             </StackLayout>

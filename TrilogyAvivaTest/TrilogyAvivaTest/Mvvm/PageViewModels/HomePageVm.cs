@@ -139,22 +139,22 @@ namespace TrilogyAvivaTest.Mvvm.PageViewModels
                 {
                     var builder = new StringBuilder();
 
-                    foreach (var item in CityWeather.weather)
+                    foreach (var item in CityWeather.Weather)
                     {
-                        builder.AppendLine(item.description.ToString());
+                        builder.AppendLine(item.Description.ToString());
                     }
                     builder.Append("Current temp: ");
-                    builder.AppendLine(CityWeather.main.temp.ToString());
+                    builder.AppendLine(CityWeather.Main.Temp.ToString());
                     builder.Append("Min temp: ");
-                    builder.AppendLine(CityWeather.main.temp_min.ToString());
+                    builder.AppendLine(CityWeather.Main.Temp_min.ToString());
                     builder.Append("Max temp: ");
-                    builder.AppendLine(CityWeather.main.temp_max.ToString());
+                    builder.AppendLine(CityWeather.Main.Temp_max.ToString());
 
                     WeatherDescription = builder.ToString();
                 }
                 else
                 {
-                    WeatherDescription = "There is no weather today";
+                    WeatherDescription = "There is no weather today ;)";
                 }
             }
         }
