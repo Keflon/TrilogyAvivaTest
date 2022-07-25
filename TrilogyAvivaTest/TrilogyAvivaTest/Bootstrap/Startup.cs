@@ -6,6 +6,7 @@ using System.Text;
 using TrilogyAvivaTest.Mvvm.Pages;
 using TrilogyAvivaTest.Mvvm.PageViewModels;
 using TrilogyAvivaTest.Services.Logging;
+using TrilogyAvivaTest.Services.Persistence;
 
 namespace TrilogyAvivaTest.Bootstrap
 {
@@ -31,6 +32,7 @@ namespace TrilogyAvivaTest.Bootstrap
 
             // Tell the IoC container about our Services.
             _IoCC.Register<ILogger, DebugLogger>(Lifestyle.Singleton);
+            _IoCC.Register<IKeyStore, KeyStore>(Lifestyle.Singleton);
         }
 
         private IPageServiceZero CreatePageService()
