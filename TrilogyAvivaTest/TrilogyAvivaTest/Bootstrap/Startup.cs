@@ -2,6 +2,7 @@
 using SimpleInjector;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Net.Http;
 using System.Text;
 using TrilogyAvivaTest.Mvvm.Pages;
@@ -10,6 +11,7 @@ using TrilogyAvivaTest.Services.Api;
 using TrilogyAvivaTest.Services.Logging;
 using TrilogyAvivaTest.Services.Persistence;
 using TrilogyAvivaTest.Services.Rest;
+using Xamarin.Essentials;
 
 namespace TrilogyAvivaTest.Bootstrap
 {
@@ -35,9 +37,9 @@ namespace TrilogyAvivaTest.Bootstrap
 
             // Tell the IoC container about our Services.
             _IoCC.Register<ILogger, DebugLogger>(Lifestyle.Singleton);
-            _IoCC.Register<IKeyStore, KeyStore>(Lifestyle.Singleton);
+            _IoCC.Register<IKeyStore>(()=> new KeyStore(_IoCC.GetInstance<ILogger>(), Path.Combine(FileSystem.CacheDirectory)), Lifestyle.Singleton);
             _IoCC.Register<IRestService>(GetRestService, Lifestyle.Singleton);
-            _IoCC.Register<OpenWeatherService>(Lifestyle.Singleton);
+            _IoCC.Register<OpenWeatherService>(()=>new OpenWeatherService(_IoCC.GetInstance<IRestService>(), ApiConstants.BaseApiUrl), Lifestyle.Singleton);
         }
 
         private IPageServiceZero CreatePageService()
