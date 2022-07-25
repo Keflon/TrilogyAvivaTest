@@ -24,6 +24,8 @@ namespace TrilogyAvivaTest
             // This app will use a standard navigation stack.
             MainPage = new NavigationPage();
 
+            pageService.Init(this);
+
             // Present the HomePage, bound to a HomePageVm.
             // Bonus points for getting the pop-culture reference here ...
             pageService.PushPageAsync<HomePage, HomePageVm>(async (vm)=> await InitialiseTheVm(vm, keyStore));
@@ -44,7 +46,7 @@ namespace TrilogyAvivaTest
                     runCount = 0;
             }
 
-            await keyStore.WriteStringAsync(Constants.RunCountKey, runCount.ToString());
+            await keyStore.WriteStringAsync(Constants.RunCountKey, (runCount+1).ToString());
 
             vm.Init(runCount);
         }

@@ -1,0 +1,23 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://xamarin.com/schemas/2014/forms"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:z="clr-namespace:FunctionZero.zBind.z;assembly=FunctionZero.zBind"
+             x:Class="TrilogyAvivaTest.Mvvm.Pages.CityWeatherPage">
+    <ContentPage.Content>
+        <StackLayout>
+            <Label Text="{z:Bind \'Your weather for \'+CityWeather.Name+\' today:\'}"/>
+
+            <StackLayout BindableLayout.ItemsSource="{Binding CityWeather.Weather}">
+                <BindableLayout.ItemTemplate>
+                    <DataTemplate >
+                        <Label Text="{Binding Description}"/>
+                    </DataTemplate>
+                </BindableLayout.ItemTemplate>
+            </StackLayout>
+
+            <Label Text="{z:Bind \'Current temperature: \'+(CityWeather.Main.Temp + AbsoluteZero) + \' C\'}"/>
+            <Label Text="{z:Bind \'Minimum temperature: \'+(CityWeather.Main.Temp_min + AbsoluteZero) + \' C\'}"/>
+            <Label Text="{z:Bind \'Maximum temperature: \'+(CityWeather.Main.Temp_max + AbsoluteZero) + \' C\'}"/>
+        </StackLayout>
+    </ContentPage.Content>
+</ContentPage>

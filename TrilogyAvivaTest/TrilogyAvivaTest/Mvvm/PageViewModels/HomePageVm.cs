@@ -1,12 +1,11 @@
 ﻿using FunctionZero.CommandZero;
+using FunctionZero.MvvmZero;
 using System;
-using System.Collections.Generic;
 using System.Runtime.CompilerServices;
-using System.Text;
 using System.Threading.Tasks;
-using System.Windows.Input;
 using TrilogyAvivaTest.Bootstrap;
 using TrilogyAvivaTest.Models;
+using TrilogyAvivaTest.Mvvm.Pages;
 using TrilogyAvivaTest.Mvvm.ViewModels;
 using TrilogyAvivaTest.Services.Api;
 using TrilogyAvivaTest.Services.Logging;
@@ -18,13 +17,18 @@ namespace TrilogyAvivaTest.Mvvm.PageViewModels
     {
         private readonly IKeyStore _keyStore;
         private readonly OpenWeatherService _weatherService;
+        private readonly IPageServiceZero _pageService;
         private string _cityName;
         private bool _isCitySaved;
-        private WeatherResponse _cityWeather;
         private string _cityNamePlaceholder;
-        private string _weatherDescription;
+        private int _runCount;
+        private string _savedCityName;
 
-        public int RunCount { get; private set; }
+        public int RunCount
+        {
+            get => _runCount;
+            set => SetProperty(ref _runCount, value);
+        }
 
         public string CityName
         {
@@ -43,31 +47,37 @@ namespace TrilogyAvivaTest.Mvvm.PageViewModels
             get => _isCitySaved;
             set => SetProperty(ref _isCitySaved, value);
         }
-        public WeatherResponse CityWeather
-        {
-            get => _cityWeather;
-            set => SetProperty(ref _cityWeather, value);
-        }
-        public string WeatherDescription
-        {
-            get => _weatherDescription;
-            set => SetProperty(ref _weatherDescription, value);
-        }
+
+        //public string WeatherDescription
+        //{
+        //    get => _weatherDescription;
+        //    set => SetProperty(ref _weatherDescription, value);
+        //}
 
         public CommandZeroAsync ResetRunCountCommand { get; }
         public CommandZeroAsync GetCityWeatherCommand { get; }
         public CommandZeroAsync SaveCityNameCommand { get; }
         public CommandZeroAsync ResetCityNameCommand { get; }
 
-        public HomePageVm(ILogger logger, IKeyStore keyStore, OpenWeatherService weatherService) : base(logger)
+        public HomePageVm(ILogger logger, IKeyStore keyStore, OpenWeatherService weatherService, IPageServiceZero pageService) : base(logger)
         {
             _keyStore = keyStore;
             _weatherService = weatherService;
+            _pageService = pageService;
+
+            // CityName is retrieved from backing store in OnOwnerPagePushed.
+            // Setting it here so it does not need to be null-checked.
+            CityName = string.Empty;
 
             ResetRunCountCommand = new CommandBuilder().AddGuard(this).SetExecute(ResetRunCount).SetName("Reset").Build();
             GetCityWeatherCommand = new CommandBuilder().AddGuard(this).SetExecuteAsync(GetCityWeatherAsync).SetName("GO!").SetCanExecute(GetIsCityValid).AddObservedProperty(this, nameof(CityName)).Build();
-            SaveCityNameCommand = new CommandBuilder().AddGuard(this).SetExecuteAsync(SaveCityAsync).SetName("Save").SetCanExecute(GetIsCityValid).AddObservedProperty(this, nameof(CityName)).Build();
+            SaveCityNameCommand = new CommandBuilder().AddGuard(this).SetExecuteAsync(SaveCityAsync).SetName("Save").SetCanExecute(CanSaveCity).AddObservedProperty(this, nameof(CityName)).Build();
             ResetCityNameCommand = new CommandBuilder().AddGuard(this).SetExecute(ResetCity).SetName("Reset").SetCanExecute(() => IsCitySaved).AddObservedProperty(this, nameof(IsCitySaved)).Build();
+        }
+
+        private bool CanSaveCity()
+        {
+            return GetIsCityValid() && (CityName != _savedCityName);
         }
 
         private void ResetRunCount()
@@ -81,7 +91,7 @@ namespace TrilogyAvivaTest.Mvvm.PageViewModels
             switch (result.status)
             {
                 case Services.Rest.ResultStatus.Success:
-                    CityWeather = result.payload;
+                    await _pageService.PushPageAsync<CityWeatherPage, CityWeatherPageVm>((vm) => vm.Init(result.payload));
                     break;
                 case Services.Rest.ResultStatus.ConnectionFailed:
                     break;
@@ -98,18 +108,19 @@ namespace TrilogyAvivaTest.Mvvm.PageViewModels
 
         private bool GetIsCityValid()
         {
-            // TODO: Validate the CityName property
-            return true;
+            // TODO: Validate the CityName properly!
+            return CityName.Length > 3;
         }
+
         private async Task SaveCityAsync()
         {
-            await _keyStore.WriteStringAsync(Constants.CityNameKey, CityName);
-            IsCitySaved = true;
+            IsCitySaved = await _keyStore.WriteStringAsync(Constants.CityNameKey, CityName);
         }
         private void ResetCity()
         {
             _keyStore.Delete(Constants.CityNameKey);
             IsCitySaved = false;
+            CityName = String.Empty;
         }
 
         internal void Init(int runCount)
@@ -118,44 +129,27 @@ namespace TrilogyAvivaTest.Mvvm.PageViewModels
             RunCount = runCount;
         }
 
-        public override async void OnOwnerPageAppearing()
+        public override async void OnOwnerPagePushed(bool isModal)
         {
-            base.OnOwnerPageAppearing();
-
-            CityName = await _keyStore.ReadStringAsync(Constants.CityNameKey);
+            base.OnOwnerPagePushed(isModal);
+            CityName = await _keyStore.ReadStringAsync(Constants.CityNameKey) ?? String.Empty;
             IsCitySaved = !string.IsNullOrEmpty(CityName);
 
             // TODO: Use an API call to get a nearby city.
             CityNamePlaceholder = "Liverpool";
         }
 
+
         protected override void OnPropertyChanged([CallerMemberName] string propertyName = null)
         {
             base.OnPropertyChanged(propertyName);
 
-            if (propertyName == nameof(CityWeather))
+            if (propertyName == nameof(IsCitySaved))
             {
-                if (CityWeather != null)
-                {
-                    var builder = new StringBuilder();
-
-                    foreach (var item in CityWeather.Weather)
-                    {
-                        builder.AppendLine(item.Description.ToString());
-                    }
-                    builder.Append("Current temp: ");
-                    builder.AppendLine(CityWeather.Main.Temp.ToString());
-                    builder.Append("Min temp: ");
-                    builder.AppendLine(CityWeather.Main.Temp_min.ToString());
-                    builder.Append("Max temp: ");
-                    builder.AppendLine(CityWeather.Main.Temp_max.ToString());
-
-                    WeatherDescription = builder.ToString();
-                }
+                if (IsCitySaved)
+                    _savedCityName = CityName;
                 else
-                {
-                    WeatherDescription = "There is no weather today ;)";
-                }
+                    _savedCityName = String.Empty;
             }
         }
     }

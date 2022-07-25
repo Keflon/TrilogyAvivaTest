@@ -2,25 +2,26 @@
 <ContentPage xmlns="http://xamarin.com/schemas/2014/forms"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml" 
              xmlns:pageviewmodels="clr-namespace:TrilogyAvivaTest.Mvvm.PageViewModels"
+             xmlns:z="clr-namespace:FunctionZero.zBind.z;assembly=FunctionZero.zBind"
              x:Class="TrilogyAvivaTest.Mvvm.Pages.HomePage"
-
              >
     <!--x:DataType="pageviewmodels:HomePageVm"-->
     <ContentPage.Content>
         <StackLayout>
+            <Label Text="{z:Bind \'The runCount has been manually reset\'}" IsVisible="{z:Bind 'RunCount == 0'}"  />
+            <Label Text="{z:Bind \'This is the first run of this app\'}" IsVisible="{z:Bind 'RunCount == 1'}"  />
+            <Label Text="{z:Bind \'This app has been run \' + RunCount +\' times\'}" IsVisible="{z:Bind 'RunCount GT 1'}"  />
+            <Button Text="{Binding ResetRunCountCommand.Text}" Command="{Binding ResetRunCountCommand}"/>
+
             <Label Text="Please Enter City Name" />
             <Entry Text="{Binding CityName}" Placeholder="{Binding CityNamePlaceholder}"/>
+            <Button Text="{Binding SaveCityNameCommand.Text}" Command="{Binding SaveCityNameCommand}"/>
+            <Button Text="{Binding ResetCityNameCommand.Text}" Command="{Binding ResetCityNameCommand}"/>
+
+
             <Button Text="{Binding GetCityWeatherCommand.Text}" Command="{Binding GetCityWeatherCommand}"/>
 
-            <StackLayout BindableLayout.ItemsSource="{Binding CityWeather.Weather}">
-                <BindableLayout.ItemTemplate>
-                    <DataTemplate >
-                        <Label Text="{Binding Description}"/>
-                    </DataTemplate>
-                </BindableLayout.ItemTemplate>
-            </StackLayout>
 
-            <Label Text="{Binding WeatherDescription}"/>
         </StackLayout>
     </ContentPage.Content>
 </ContentPage>

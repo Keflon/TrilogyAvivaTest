@@ -31,9 +31,11 @@ namespace TrilogyAvivaTest.Bootstrap
 
             // Tell the IoC container about our Pages.
             _IoCC.Register<HomePage>(Lifestyle.Singleton);
+            _IoCC.Register<CityWeatherPage>(Lifestyle.Singleton);
 
             // Tell the IoC container about our ViewModels.
             _IoCC.Register<HomePageVm>(Lifestyle.Singleton);
+            _IoCC.Register<CityWeatherPageVm>(Lifestyle.Singleton);
 
             // Tell the IoC container about our Services.
             _IoCC.Register<ILogger, DebugLogger>(Lifestyle.Singleton);
