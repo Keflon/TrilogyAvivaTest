@@ -21,14 +21,13 @@ namespace TrilogyAvivaTest
 
             InitializeComponent();
 
-            // This app will use a standard navigation stack.
-            MainPage = new NavigationPage();
-
             pageService.Init(this);
 
-            // Present the HomePage, bound to a HomePageVm.
-            // Bonus points for getting the pop-culture reference here ...
-            pageService.PushPageAsync<HomePage, HomePageVm>(async (vm)=> await InitialiseTheVm(vm, keyStore));
+            var thing = pageService.GetMvvmPage<HomePage, HomePageVm>(GetMvvmPageMode.Default);
+            _ = InitialiseTheVm(thing.viewModel, keyStore);
+            
+            // This app will use a standard navigation stack.
+            MainPage = new NavigationPage(thing.page);
         }
 
         private async Task InitialiseTheVm(HomePageVm vm, IKeyStore keyStore)

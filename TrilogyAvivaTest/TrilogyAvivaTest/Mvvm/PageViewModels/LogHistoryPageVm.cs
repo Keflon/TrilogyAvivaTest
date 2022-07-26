@@ -17,7 +17,7 @@ namespace TrilogyAvivaTest.Mvvm.PageViewModels
             // This exists simply to relay the logger to the base class.
         }
 
-        internal async Task Init(string fromString)
+        public void Init(string fromString)
         {
             _logger.LogLine("LogHistoryPageVm initialised by " + fromString);
         }
