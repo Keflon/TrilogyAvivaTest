@@ -21,7 +21,7 @@ namespace TrilogyAvivaTest.Mvvm.PageViewModels
         private readonly IPageServiceZero _pageService;
         private readonly IAlertService _alertService;
         private string _cityName;
-        private bool _isCitySaved;
+        private bool _isCitySaved; 
         private string _cityNamePlaceholder;
         private int _runCount;
         private string _savedCityName;
@@ -49,12 +49,6 @@ namespace TrilogyAvivaTest.Mvvm.PageViewModels
             get => _isCitySaved;
             set => SetProperty(ref _isCitySaved, value);
         }
-
-        //public string WeatherDescription
-        //{
-        //    get => _weatherDescription;
-        //    set => SetProperty(ref _weatherDescription, value);
-        //}
 
         public CommandZeroAsync ResetRunCountCommand { get; }
         public CommandZeroAsync GetCityWeatherCommand { get; }
@@ -107,11 +101,14 @@ namespace TrilogyAvivaTest.Mvvm.PageViewModels
             switch (result.status)
             {
                 case Services.Rest.ResultStatus.Success:
-                    if (CityName == _savedCityName)
+                    // result.payload.Name may hold a 'corrected' spelling for CityName
+                    // If an incorrect spelling is 'saved', replace it with the correct spelling.
+                    bool nameIsSaved = CityName == _savedCityName;
+                    if(CityName != result.payload.Name)
                     {
                         CityName = result.payload.Name;
-                        if (IsCitySaved)
-                            await SaveCityNameCommand?.ExecuteAsync(null);
+                        if(nameIsSaved)
+                            await SaveCityAsync();
                     }
                     await _pageService.PushPageAsync<CityWeatherPage, CityWeatherPageVm>((vm) => vm.Init(result.payload));
                     break;
@@ -128,7 +125,7 @@ namespace TrilogyAvivaTest.Mvvm.PageViewModels
                     await _alertService.DisplayAlertAsync("Something awful happened", "The server may be having a wobble. Please try again later", "OK");
                     break;
                 case Services.Rest.ResultStatus.Other:
-                    await _alertService.DisplayAlertAsync("Something awful happened", "That's all we know. Maybe try again later?", "OK");
+                    await _alertService.DisplayAlertAsync("Oops!", "Unknown location", "OK");
                     break;
             }
         }
@@ -141,6 +138,9 @@ namespace TrilogyAvivaTest.Mvvm.PageViewModels
 
         private async Task SaveCityAsync()
         {
+            // Swapping IsCitySaved manages _savedCityName via OnPropertyChanged
+            // So we must set IsCitySaved to false before saving.
+            IsCitySaved = false;
             IsCitySaved = await _keyStore.WriteStringAsync(Constants.CityNameKey, CityName);
         }
         private void ResetCity()
