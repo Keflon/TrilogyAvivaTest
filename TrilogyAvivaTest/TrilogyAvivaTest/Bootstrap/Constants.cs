@@ -4,7 +4,7 @@ using System.Text;
 
 namespace TrilogyAvivaTest.Bootstrap
 {
-    internal class Constants
+    public class Constants
     {
         public const string RunCountKey = "runcount";
         public const string CityNameKey = "cityname";

@@ -14,14 +14,13 @@ using TrilogyAvivaTest.Services.Persistence;
 
 namespace TrilogyAvivaTest.Mvvm.PageViewModels
 {
-    internal class HomePageVm : BasePageVm
+    public class HomePageVm : BasePageVm
     {
         private readonly IKeyStore _keyStore;
         private readonly OpenWeatherService _weatherService;
         private readonly IPageServiceZero _pageService;
         private readonly IAlertService _alertService;
         private string _cityName;
-        private bool _isCitySaved; 
         private string _cityNamePlaceholder;
         private int _runCount;
         private string _savedCityName;
@@ -37,6 +36,11 @@ namespace TrilogyAvivaTest.Mvvm.PageViewModels
             get => _cityName;
             set => SetProperty(ref _cityName, value);
         }
+        public string SavedCityName
+        {
+            get => _savedCityName;
+            set => SetProperty(ref _savedCityName, value);
+        }
 
         public string CityNamePlaceholder
         {
@@ -44,16 +48,13 @@ namespace TrilogyAvivaTest.Mvvm.PageViewModels
             set => SetProperty(ref _cityNamePlaceholder, value);
         }
 
-        public bool IsCitySaved
-        {
-            get => _isCitySaved;
-            set => SetProperty(ref _isCitySaved, value);
-        }
-
+        // Concrete type is preferred here so x:DataType works in xaml for the ~.Text property.
         public CommandZeroAsync ResetRunCountCommand { get; }
         public CommandZeroAsync GetCityWeatherCommand { get; }
         public CommandZeroAsync SaveCityNameCommand { get; }
+        public CommandZeroAsync LoadCityNameCommand { get; }
         public CommandZeroAsync ResetCityNameCommand { get; }
+        public CommandZeroAsync ShowLogCommand { get; }
 
         public HomePageVm(
             ILogger logger,
@@ -70,14 +71,22 @@ namespace TrilogyAvivaTest.Mvvm.PageViewModels
             // CityName is retrieved from backing store in OnOwnerPagePushed.
             // Setting it here so it does not need to be null-checked.
             CityName = string.Empty;
+            SavedCityName = string.Empty;
 
             ResetRunCountCommand = new CommandBuilder().AddGuard(this).SetExecute(ResetRunCount).SetName("Reset").Build();
-            GetCityWeatherCommand = new CommandBuilder().AddGuard(this).SetExecuteAsync(GetCityWeatherAsync).SetName(GetGoText).SetCanExecute(GetIsCityValid).AddObservedProperty(this, nameof(CityName)).Build();
+            GetCityWeatherCommand = new CommandBuilder().AddGuard(this).SetExecuteAsync(GetCityWeatherAsync).SetName(GetGetCityWeatherCommandText).SetCanExecute(GetIsCityValid).AddObservedProperty(this, nameof(CityName)).Build();
             SaveCityNameCommand = new CommandBuilder().AddGuard(this).SetExecuteAsync(SaveCityAsync).SetName("Save").SetCanExecute(CanSaveCity).AddObservedProperty(this, nameof(CityName)).Build();
-            ResetCityNameCommand = new CommandBuilder().AddGuard(this).SetExecute(ResetCity).SetName("Reset").SetCanExecute(() => IsCitySaved).AddObservedProperty(this, nameof(IsCitySaved)).Build();
+            LoadCityNameCommand = new CommandBuilder().AddGuard(this).SetExecute(()=>CityName = SavedCityName).SetName("Load").SetCanExecute(CanLoadCity).AddObservedProperty(this, nameof(CityName), nameof(SavedCityName)).Build();
+            ResetCityNameCommand = new CommandBuilder().AddGuard(this).SetExecute(ResetCity).SetName("Reset").SetCanExecute(() => SavedCityName != string.Empty).AddObservedProperty(this, nameof(SavedCityName)).Build();
+            ShowLogCommand = new CommandBuilder().AddGuard(this).SetExecuteAsync(ShowLogCommandExecuteAsync).SetName("Show Log").Build();
         }
 
-        private string GetGoText()
+        private async Task ShowLogCommandExecuteAsync()
+        {
+            await _pageService.PushPageAsync<LogHistoryPage, LogHistoryPageVm>((vm) =>  vm.Init("From HomePageVm"));
+        }
+
+        private string GetGetCityWeatherCommandText()
         {
             if (GetIsCityValid())
                 return "Get Weather for " + CityName;
@@ -85,9 +94,14 @@ namespace TrilogyAvivaTest.Mvvm.PageViewModels
             return "Waiting ...";
         }
 
-        private bool CanSaveCity()
+        public bool CanSaveCity()
         {
-            return GetIsCityValid() && (CityName != _savedCityName);
+            return GetIsCityValid() && (CityName != SavedCityName);
+        }
+
+        private bool CanLoadCity()
+        {
+            return (SavedCityName!= string.Empty) &&(SavedCityName != CityName);
         }
 
         private void ResetRunCount()
@@ -138,16 +152,17 @@ namespace TrilogyAvivaTest.Mvvm.PageViewModels
 
         private async Task SaveCityAsync()
         {
-            // Swapping IsCitySaved manages _savedCityName via OnPropertyChanged
-            // So we must set IsCitySaved to false before saving.
-            IsCitySaved = false;
-            IsCitySaved = await _keyStore.WriteStringAsync(Constants.CityNameKey, CityName);
+            if(await _keyStore.WriteStringAsync(Constants.CityNameKey, CityName))
+                SavedCityName = CityName;
+            else
+                SavedCityName = string.Empty;
         }
+
         private void ResetCity()
         {
             _keyStore.Delete(Constants.CityNameKey);
-            IsCitySaved = false;
-            CityName = String.Empty;
+            SavedCityName = string.Empty;
+            CityName = string.Empty;
         }
 
         internal void Init(int runCount)
@@ -159,28 +174,19 @@ namespace TrilogyAvivaTest.Mvvm.PageViewModels
         public override async void OnOwnerPagePushed(bool isModal)
         {
             base.OnOwnerPagePushed(isModal);
+
             CityName = await _keyStore.ReadStringAsync(Constants.CityNameKey) ?? String.Empty;
-            IsCitySaved = !string.IsNullOrEmpty(CityName);
+            SavedCityName = CityName;
 
             // TODO: Use an API call to get a nearby city.
             CityNamePlaceholder = "E.g. Liverpool";
 
             if (RunCount == 1)
-                await _alertService.DisplayAlertAsync("First Run!", "Hello. This is the first time you have launched the app. Hope you like it :)", "Dismiss");
-        }
-
-
-        protected override void OnPropertyChanged([CallerMemberName] string propertyName = null)
-        {
-            base.OnPropertyChanged(propertyName);
-
-            if (propertyName == nameof(IsCitySaved))
-            {
-                if (IsCitySaved)
-                    _savedCityName = CityName;
-                else
-                    _savedCityName = String.Empty;
-            }
+                await _alertService.DisplayAlertAsync(
+                    "First Run!", 
+                    "Hello. This is the first time you have launched the app. Hope you like it :)", 
+                    "Dismiss"
+                    );
         }
     }
 }

@@ -1,0 +1,36 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://xamarin.com/schemas/2014/forms"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="TrilogyAvivaTest.Mvvm.Pages.LogHistoryPage"
+             Title="Captain's Log"
+             >
+    <ContentPage.Content>
+        <Grid RowDefinitions="Auto,*,Auto">
+
+            <CollectionView ItemsSource="{Binding Logger.History}" >
+                <CollectionView.Header>
+                    <Label 
+                        Text="Log History" 
+                        Background="Cyan" 
+                        HorizontalTextAlignment="Center" 
+                        VerticalTextAlignment="Center" 
+                        FontSize="Large" Margin="10"
+                        />
+                </CollectionView.Header>
+                
+                <CollectionView.ItemTemplate>
+                    <DataTemplate>
+                        <Label Text="{Binding}"/>
+                    </DataTemplate>
+                </CollectionView.ItemTemplate>
+
+                <CollectionView.Footer>
+                    <Label Text="/Log History"/>
+
+                </CollectionView.Footer>
+            </CollectionView>
+            
+            <Label Grid.Row="2" Text="Footer"/>
+        </Grid>
+    </ContentPage.Content>
+</ContentPage>

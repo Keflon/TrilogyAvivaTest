@@ -33,13 +33,15 @@ namespace TrilogyAvivaTest.Bootstrap
             // Tell the IoC container about our Pages.
             _IoCC.Register<HomePage>(Lifestyle.Singleton);
             _IoCC.Register<CityWeatherPage>(Lifestyle.Singleton);
+            _IoCC.Register<LogHistoryPage>(Lifestyle.Singleton);
 
             // Tell the IoC container about our ViewModels.
             _IoCC.Register<HomePageVm>(Lifestyle.Singleton);
             _IoCC.Register<CityWeatherPageVm>(Lifestyle.Singleton);
+            _IoCC.Register<LogHistoryPageVm>(Lifestyle.Singleton);
 
             // Tell the IoC container about our Services.
-            _IoCC.Register<ILogger, DebugLogger>(Lifestyle.Singleton);
+            _IoCC.Register<ILogger>(()=>new DebugLogger(1000), Lifestyle.Singleton);
             _IoCC.Register<IKeyStore>(()=> new KeyStore(_IoCC.GetInstance<ILogger>(), Path.Combine(FileSystem.CacheDirectory)), Lifestyle.Singleton);
             _IoCC.Register<IRestService>(GetRestService, Lifestyle.Singleton);
             _IoCC.Register<OpenWeatherService>(()=>new OpenWeatherService(_IoCC.GetInstance<IRestService>(), ApiConstants.WeatherServiceEndpoint), Lifestyle.Singleton);

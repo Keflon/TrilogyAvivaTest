@@ -8,5 +8,7 @@ namespace TrilogyAvivaTest.Services.Logging
     {
         void Log(string message);
         void LogLine(string message);
+
+        IEnumerable<string> History { get; }
     }
 }

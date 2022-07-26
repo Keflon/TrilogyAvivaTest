@@ -8,7 +8,7 @@ using TrilogyAvivaTest.Services.Rest;
 
 namespace TrilogyAvivaTest.Services.Api
 {
-    internal class OpenWeatherService
+    public class OpenWeatherService
     {
         private readonly IRestService _restService;
         private readonly string _apiPath;
