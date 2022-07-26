@@ -5,7 +5,7 @@
              xmlns:z="clr-namespace:FunctionZero.zBind.z;assembly=FunctionZero.zBind"
              x:Class="TrilogyAvivaTest.Mvvm.Pages.HomePage"
              Title="Weather Sample"
-             
+             NavigationPage.HasBackButton="False"
              
              >
     <!--x:DataType="pageviewmodels:HomePageVm"-->
